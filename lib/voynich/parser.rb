@@ -60,10 +60,10 @@ module Voynich
         if current_block_type == :example
           case line
           when /^<(.*)/
-            found_block :plain
-            parse_inline($1)
-            next
+            line = $1
+            # end example
           when /^[^ \t]/
+            # end example
           else
             append_line! [line]
             next
@@ -120,7 +120,7 @@ module Voynich
                           /(?:(?:^|\b)N(?:\b|(?=\.(?:$|\s)|th|-1)))/,
                           %r|{[-a-zA-Z0-9'"*+/:%#=\[\]<>.,]+}|,
                           /(?<=\s)\[[-a-z^A-Z0-9_]{2,}\]/,
-                          /<[SCM]-.|[-a-zA-Z0-9_]+>/,
+                          /<(?:[SCM]-.|[-a-zA-Z0-9_]+)>/,
                           /\[(?:range|line|count|offset|\+?cmd|[+-]?num|\+\+opt|arg(?:uments)?|ident|addr|group)\]/,
                           /CTRL-(?:\.|Break|PageUp|PageDown|Insert|Del|-{char})/,
                         ),

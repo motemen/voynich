@@ -54,13 +54,36 @@ VIMDOC
     end
 
     it 'should recognize header' do
-      expect(parser.parse(<<VIMDOC).to_a).to eq([
+      expect(parser.parse(<<VIMDOC).to_a)
 A SAMPLE HEADER ~
 VIMDOC
+      .to eq([
         {:type=>:header,
          :lines=>
           [[[:header, "A SAMPLE HEADER"],
             " "] ]}
+      ])
+    end
+
+    it 'should recognize successive example blocks' do
+      expect(parser.parse(<<VIMDOC).to_a)
+                        Example for case sensitive search: >
+                                :helpgrep Uganda
+<                       Example for case ignoring search: >
+                                :helpgrep uganda\c
+<                       The pattern does not support line breaks, it must
+VIMDOC
+      .to eq([
+        {:type=>:plain,
+         :lines=>[["                        Example for case sensitive search: "]]},
+        {:type=>:example,
+         :lines=>[["                                :helpgrep Uganda"]]},
+        {:type=>:plain,
+         :lines=>[["                       Example for case ignoring search: "]]},
+        {:type=>:example,
+         :lines=>[["                                :helpgrep uganda"]]},
+        {:type=>:plain,
+         :lines=>[["                       The pattern does not support line breaks, it must"]]},
       ])
     end
   end
