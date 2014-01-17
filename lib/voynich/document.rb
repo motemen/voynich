@@ -85,7 +85,18 @@ module Voynich
       end
 
       def wrap(tag, attrs, html)
+        attrs = attrs || {}
+
         if tag
+          tag.gsub(/\.([^.]+)/) do
+            attrs[:class] ||= []
+            attrs[:class] << $1
+            ''
+          end
+
+          attrs.each do |k,v|
+            tag += %Q( #{k}="#{escape_html(v.is_a?(Array) ? v.join(' ') : v)}")
+          end
           "<#{tag}>#{html}</#{tag}>"
         else
           html
