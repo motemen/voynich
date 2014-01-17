@@ -1,41 +1,51 @@
+require 'voynich/document'
+
 module Voynich
   class Parser
     def initialize
-      @blocks = []
+      @doc = Document.new
+    end
+
+    def append_block!(type)
+      if current_block_type != type
+        @doc.blocks << Document::Block.new(type)
+      else
+        current_block.lines << []
+      end
+    end
+
+    def append_line!(line)
+      current_block.lines << line
+    end
+
+    def append_inline_part!(part)
+      append_line! [] if current_block.lines.empty?
+      current_block.lines.last << part
     end
 
     def found_block(type)
       if current_block_type != type
-        @blocks << { :type => type }
+        append_block! type
       else
-        current_lines << []
+        append_line! []
       end
     end
 
     def found_inline(type, text)
       if type
-        current_line << [ type, text ]
+        append_inline_part! [ type, text ]
       else
-        current_line << text
+        append_inline_part! text
       end
     end
 
     def current_block
-      @blocks << { :type => :plain } if @blocks.empty?
-      @blocks.last
-    end
-
-    def current_lines
-      current_block[:lines] ||= [ [] ]
-      current_block[:lines]
-    end
-
-    def current_line
-      current_lines.last
+      append_block! :plain if @doc.blocks.empty?
+      @doc.blocks.last
     end
 
     def current_block_type
-      not @blocks.empty? and current_block[:type]
+      not @doc.blocks.empty? and current_block.type
     end
 
     def parse(source)
@@ -49,22 +59,22 @@ module Voynich
             found_block :plain
             parse_inline(line)
           else
-            current_lines << line
+            append_line! [line]
           end
         else
           case line
           when /^([-A-Z .][-A-Z0-9 .()]*?)([ \t]+)(\*.*)/
             # helpHeadline
             found_block :headline
-            current_line << [ :headline, $1 ]
-            current_line << $2
+            append_inline_part! [ :headline, $1 ]
+            append_inline_part! $2
             parse_inline($3)
           when /^(\s*)(.+?)(\s*)~$/
             # helpHeader
             found_block :header
-            current_line << $1 unless $1.empty?
-            current_line << [ :header, $2 ]
-            current_line << $3 unless $3.empty?
+            append_inline_part! $1 unless $1.empty?
+            append_inline_part! [ :header, $2 ]
+            append_inline_part! $3 unless $3.empty?
           when /^(|.* )>$/
             parse_inline($1)
             found_block :example
@@ -78,7 +88,7 @@ module Voynich
         end
       end
 
-      @blocks
+      @doc
     end
 
     # TODO helpSpecial

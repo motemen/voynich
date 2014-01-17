@@ -6,11 +6,11 @@ describe Voynich::Parser do
 
   describe '#parse' do
     it 'should return an Array' do
-      expect(parser.parse(sample_content('help-random.txt'))).to be_a(Array)
+      expect(parser.parse(sample_content('help-random.txt')).to_a).to be_a(Array)
     end
 
     it 'should recognize headline block' do
-      expect(parser.parse("INTRODUCTION\t*introduction*")).to eq([
+      expect(parser.parse("INTRODUCTION\t*introduction*").to_a).to eq([
         {
           :type => :headline,
           :lines => [
@@ -25,7 +25,7 @@ describe Voynich::Parser do
     end
 
     it 'should recognize inline hypertextjump' do
-      expect(parser.parse(<<VIMDOC)).to eq([
+      expect(parser.parse(<<VIMDOC).to_a).to eq([
 It is well known that to read |:help| again and again is the best way for Vim
 newbies. But what is to start with? The Vim help is so vast, that the
 beginners often are in lost.
@@ -41,7 +41,7 @@ VIMDOC
     end
 
     it 'should recognize header' do
-      expect(parser.parse(<<VIMDOC)).to eq([
+      expect(parser.parse(<<VIMDOC).to_a).to eq([
 A SAMPLE HEADER ~
 VIMDOC
         {:type=>:header,
