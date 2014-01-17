@@ -5,8 +5,9 @@ describe Voynich::Parser do
   subject(:parser) { Voynich::Parser.new }
 
   describe '#parse' do
-    it 'should return an Array' do
-      expect(parser.parse(sample_content('help-random.txt')).to_a).to be_a(Array)
+    it 'should return a Document' do
+      expect(parser.parse(sample_content('help-random.txt'))).to be_a(Voynich::Document)
+      puts parser.parse(sample_content('help-random.txt')).to_html
     end
 
     it 'should recognize headline block' do
@@ -48,6 +49,17 @@ VIMDOC
          :lines=>
           [[[:header, "A SAMPLE HEADER"],
             " "] ]}
+      ])
+    end
+  end
+
+  describe '#parse_inline' do
+    before { parser.parse_inline('N-1 times. N.') }
+
+    it 'should recognize helpSpecial' do
+      expect(parser.document.blocks.last.lines.last).to eq([
+        [ :special, 'N' ], '-1 times. ',
+        [ :special, 'N' ], '.'
       ])
     end
   end

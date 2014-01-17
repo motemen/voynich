@@ -6,16 +6,21 @@ module Voynich
       @doc = Document.new
     end
 
+    def document
+      @doc
+    end
+
     def append_block!(type)
       if current_block_type != type
         @doc.blocks << Document::Block.new(type)
       else
-        current_block.lines << []
+        # connectable, add one line
+        append_line! []
       end
     end
 
-    def append_line!(line)
-      current_block.lines << line
+    def append_line!(parts)
+      current_block.lines << parts
     end
 
     def append_inline_part!(part)
@@ -50,7 +55,6 @@ module Voynich
 
     def parse(source)
       source.each_line.map do |line|
-        # TODO helpGraphic
         if current_block_type == :example
           case line
           when /^</
@@ -76,6 +80,7 @@ module Voynich
             append_inline_part! [ :header, $2 ]
             append_inline_part! $3 unless $3.empty?
           when /^(|.* )>$/
+            # helpExample
             parse_inline($1)
             found_block :example
           when /^===.*===$/, /^---.*--$/
@@ -91,21 +96,21 @@ module Voynich
       @doc
     end
 
-    # TODO helpSpecial
     RE_INLINE_PARTS = {
       hyper_text_entry: /\*[#-)!+-~]+\*(?=\s|$)/,
-      hyper_text_jump: /(?!\\)\|[#-)!+-~]+\|/,
-      option: /'(?:[a-z]{2,}|t_..)'/,
-      command: /`[^` \t]+`/,
-      note: /(note:?|Notes?:?|NOTE:?)/,
-      url: %r#\b(((https?|ftp|gopher)://|(mailto|file|news):)[^' \t<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' \t<>"]+)[a-zA-Z0-9/]#,
+       hyper_text_jump: /(?!\\)\|[#-)!+-~]+\|/,
+                option: /'(?:[a-z]{2,}|t_..)'/,
+               command: /`[^` \t]+`/,
+               special: /(?:(?:^|\b)N(?:\b|(?=\.(?:$|\s)|th|-1)))/,
+                   url: %r#\b(((https?|ftp|gopher)://|(mailto|file|news):)[^' \t<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' \t<>"]+)[a-zA-Z0-9/]#,
+                  note: /(note:?|Notes?:?|NOTE:?)/,
     }
-    RE_INLINE = Regexp.new('(?<plain>.+?)?(?:' + RE_INLINE_PARTS.map { |name,re| "(?<#{name}>#{re})" }.join('|') + ')|(?<plain>.+)')
+    RE_INLINE = Regexp.new('(?<plain>.*?)(?:' + RE_INLINE_PARTS.map { |name,re| "(?<#{name}>#{re})" }.join('|') + ')|(?<plain>.+)')
     def parse_inline(line)
       line.scan(RE_INLINE) do
         m = Regexp.last_match
 
-        if m['plain']
+        if not m['plain'].nil? and not m['plain'].empty?
           found_inline nil, m['plain']
         end
 
