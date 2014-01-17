@@ -55,56 +55,56 @@ module Voynich
 
     def parse(source)
       source.each_line.map do |line|
+        line.chomp!
+
         if current_block_type == :example
           case line
           when /^<(.*)/
             found_block :plain
             parse_inline($1)
+            next
           when /^[^ \t]/
-            found_block :plain
-            parse_inline(line)
           else
             append_line! [line]
+            next
           end
-        else
-          if current_block_type == :graphic
-            case line
-            when /^.* `$/
-              # helpGraphic
-              parse_inline(line)
-              next
-            end
-          end
-
+        elsif current_block_type == :graphic
           case line
-          when /^([-A-Z .][-A-Z0-9 .()]*?)([ \t]+)(\*.*)/
-            # helpHeadline
-            found_block :headline
-            append_inline_part! [ :headline, $1 ]
-            append_inline_part! $2
-            parse_inline($3)
-          when /^(\s*)(.+?)(\s*)~$/
-            # helpHeader
-            found_block :header
-            append_inline_part! $1 unless $1.empty?
-            append_inline_part! [ :header, $2 ]
-            append_inline_part! $3 unless $3.empty?
           when /^.* `$/
             # helpGraphic
-            found_block :graphic
             parse_inline(line)
-          when /^(|.* )>$/
-            # helpExample
-            found_block :plain
-            parse_inline($1)
-            found_block :example
-          when /^===.*===$/, /^---.*--$/
-            # helpSectionDelim
-            found_block :section_delim
-          else
-            found_block :plain
-            parse_inline(line)
+            next
           end
+        end
+
+        case line
+        when /^([-A-Z .][-A-Z0-9 .()]*?)([ \t]+)(\*.*)/
+          # helpHeadline
+          found_block :headline
+          append_inline_part! [ :headline, $1 ]
+          append_inline_part! $2
+          parse_inline($3)
+        when /^(\s*)(.+?)(\s*)~$/
+          # helpHeader
+          found_block :header
+          append_inline_part! $1 unless $1.empty?
+          append_inline_part! [ :header, $2 ]
+          append_inline_part! $3 unless $3.empty?
+        when /^.* `$/
+          # helpGraphic
+          found_block :graphic
+          parse_inline(line)
+        when /^(|.* )>$/
+          # helpExample
+          found_block :plain
+          parse_inline($1)
+          found_block :example
+        when /^===.*===$/, /^---.*--$/
+          # helpSectionDelim
+          found_block :section_delim
+        else
+          found_block :plain
+          parse_inline(line)
         end
       end
 
@@ -116,7 +116,14 @@ module Voynich
        hyper_text_jump: /(?!\\)\|[#-)!+-~]+\|/,
                 option: /'(?:[a-z]{2,}|t_..)'/,
                command: /`[^` \t]+`/,
-               special: /(?:(?:^|\b)N(?:\b|(?=\.(?:$|\s)|th|-1)))/,
+               special: Regexp.union(
+                          /(?:(?:^|\b)N(?:\b|(?=\.(?:$|\s)|th|-1)))/,
+                          %r|{[-a-zA-Z0-9'"*+/:%#=\[\]<>.,]+}|,
+                          /(?<=\s)\[[-a-z^A-Z0-9_]{2,}\]/,
+                          /<[SCM]-.|[-a-zA-Z0-9_]+>/,
+                          /\[(?:range|line|count|offset|\+?cmd|[+-]?num|\+\+opt|arg(?:uments)?|ident|addr|group)\]/,
+                          /CTRL-(?:\.|Break|PageUp|PageDown|Insert|Del|-{char})/,
+                        ),
                    url: %r#\b(((https?|ftp|gopher)://|(mailto|file|news):)[^' \t<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' \t<>"]+)[a-zA-Z0-9/]#,
                   note: /(note:?|Notes?:?|NOTE:?)/,
     }

@@ -38,7 +38,7 @@ module Voynich
           end.join
         end.join("\n")
 
-        wrap block_tag, nil, content
+        mk_tag block_tag, nil, content
       end
 
       def escape_html(string)
@@ -49,23 +49,28 @@ module Voynich
         return '' unless part
         return escape_html part if part.is_a?(String)
 
-        case part[0]
+        type, text = part
+        html = escape_html text
+
+        case type
         when :hyper_text_entry
-          %Q(<a name="TODO">#{escape_html part[1]}</a>)
+          mk_tag 'a', { name: text[1..-2] }, html
         when :hyper_text_jump
-          %Q(<a href="#TODO">#{escape_html part[1]}</a>)
+          mk_tag 'a', { href: "##{text[1..-2]}" }, html
         when :option
-          wrap 'code.option', nil, escape_html(part[1])
+          mk_tag 'code.option', nil, html
         when :command
-          wrap 'code.command', nil, escape_html(part[1])
+          mk_tag 'code.command', nil, html
         when :note
-          wrap 'span.note', nil, escape_html(part[1])
+          mk_tag 'span.note', nil, html
         when :url
-          wrap 'a', nil, escape_html(part[1])
+          mk_tag 'a', { href: text }, html
         when :special
-          wrap 'code.special', nil, escape_html(part[1])
+          mk_tag 'code.special', nil, html
+        when :headline, :header
+          html
         else
-          '<!-- TODO -->'
+          "<!-- TODO (#{type}) -->"
         end
       end
 
@@ -81,14 +86,16 @@ module Voynich
           'pre.example'
         when :grahic
           'pre.graphic'
+        when :section_delim
+          'hr'
         end
       end
 
-      def wrap(tag, attrs, html)
+      def mk_tag(tag, attrs, html)
         attrs = attrs || {}
 
         if tag
-          tag.gsub(/\.([^.]+)/) do
+          tag.gsub!(/\.([^.]+)/) do
             attrs[:class] ||= []
             attrs[:class] << $1
             ''

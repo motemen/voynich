@@ -32,7 +32,7 @@ describe Voynich::Parser do
 < blah blah blah.
       VIMDOC
         [{:type=>:plain, :lines=>[["  blah blah blah: "]]},
-         {:type=>:example, :lines=>[["    $ vim\n"]]},
+         {:type=>:example, :lines=>[["    $ vim"]]},
          {:type=>:plain, :lines=>[[" blah blah blah."]]}]
       )
     end
