@@ -25,6 +25,18 @@ describe Voynich::Parser do
       ])
     end
 
+    it 'should recognize example block' do
+      expect(parser.parse(<<-VIMDOC).to_a).to eq(
+  blah blah blah: >
+    $ vim
+< blah blah blah.
+      VIMDOC
+        [{:type=>:plain, :lines=>[["  blah blah blah: "]]},
+         {:type=>:example, :lines=>[["    $ vim\n"]]},
+         {:type=>:plain, :lines=>[[" blah blah blah."]]}]
+      )
+    end
+
     it 'should recognize inline hypertextjump' do
       expect(parser.parse(<<VIMDOC).to_a).to eq([
 It is well known that to read |:help| again and again is the best way for Vim

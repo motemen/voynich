@@ -78,7 +78,9 @@ module Voynich
         when :header
           'h2'
         when :example
-          'code.example'
+          'pre.example'
+        when :grahic
+          'pre.graphic'
         end
       end
 

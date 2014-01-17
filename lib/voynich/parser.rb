@@ -57,8 +57,9 @@ module Voynich
       source.each_line.map do |line|
         if current_block_type == :example
           case line
-          when /^</
+          when /^<(.*)/
             found_block :plain
+            parse_inline($1)
           when /^[^ \t]/
             found_block :plain
             parse_inline(line)
@@ -66,6 +67,15 @@ module Voynich
             append_line! [line]
           end
         else
+          if current_block_type == :graphic
+            case line
+            when /^.* `$/
+              # helpGraphic
+              parse_inline(line)
+              next
+            end
+          end
+
           case line
           when /^([-A-Z .][-A-Z0-9 .()]*?)([ \t]+)(\*.*)/
             # helpHeadline
@@ -79,8 +89,13 @@ module Voynich
             append_inline_part! $1 unless $1.empty?
             append_inline_part! [ :header, $2 ]
             append_inline_part! $3 unless $3.empty?
+          when /^.* `$/
+            # helpGraphic
+            found_block :graphic
+            parse_inline(line)
           when /^(|.* )>$/
             # helpExample
+            found_block :plain
             parse_inline($1)
             found_block :example
           when /^===.*===$/, /^---.*--$/
