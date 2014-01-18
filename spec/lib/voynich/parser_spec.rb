@@ -89,13 +89,27 @@ VIMDOC
   end
 
   describe '#parse_inline' do
-    before { parser.parse_inline('N-1 times. N.') }
+    context do
+      before { parser.parse_inline('N-1 times. N.') }
 
-    it 'should recognize helpSpecial' do
-      expect(parser.document.blocks.last.lines.last).to eq([
-        [ :special, 'N' ], '-1 times. ',
-        [ :special, 'N' ], '.'
-      ])
+      it 'should recognize helpSpecial' do
+        expect(parser.document.blocks.last.lines.last).to eq([
+          [ :special, 'N' ], '-1 times. ',
+          [ :special, 'N' ], '.'
+        ])
+      end
+    end
+
+    context do
+      before { parser.parse_inline('<S-Up> or <PageUp>') }
+
+      it 'should recognize helpSpecial' do
+        expect(parser.document.blocks.last.lines.last).to eq([
+          [ :special, '<S-Up>' ],
+          ' or ',
+          [ :special, '<PageUp>' ],
+        ])
+      end
     end
   end
 end

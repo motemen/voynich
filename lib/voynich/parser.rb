@@ -10,49 +10,6 @@ module Voynich
       @doc
     end
 
-    def append_block!(type)
-      if current_block_type != type
-        @doc.blocks << Document::Block.new(type)
-      else
-        # connectable, add one line
-        append_line! []
-      end
-    end
-
-    def append_line!(parts)
-      current_block.lines << parts
-    end
-
-    def append_inline_part!(part)
-      append_line! [] if current_block.lines.empty?
-      current_block.lines.last << part
-    end
-
-    def found_block(type)
-      if current_block_type != type
-        append_block! type
-      else
-        append_line! []
-      end
-    end
-
-    def found_inline(type, text)
-      if type
-        append_inline_part! [ type, text ]
-      else
-        append_inline_part! text
-      end
-    end
-
-    def current_block
-      append_block! :plain if @doc.blocks.empty?
-      @doc.blocks.last
-    end
-
-    def current_block_type
-      not @doc.blocks.empty? and current_block.type
-    end
-
     def parse(source)
       source.each_line.map do |line|
         line.chomp!
@@ -142,6 +99,51 @@ module Voynich
           end
         end
       end
+    end
+
+    private
+
+    def append_block!(type)
+      if current_block_type != type
+        @doc.blocks << Document::Block.new(type)
+      else
+        # connectable, add one line
+        append_line! []
+      end
+    end
+
+    def append_line!(parts)
+      current_block.lines << parts
+    end
+
+    def append_inline_part!(part)
+      append_line! [] if current_block.lines.empty?
+      current_block.lines.last << part
+    end
+
+    def found_block(type)
+      if current_block_type != type
+        append_block! type
+      else
+        append_line! []
+      end
+    end
+
+    def found_inline(type, text)
+      if type
+        append_inline_part! [ type, text ]
+      else
+        append_inline_part! text
+      end
+    end
+
+    def current_block
+      append_block! :plain if @doc.blocks.empty?
+      @doc.blocks.last
+    end
+
+    def current_block_type
+      not @doc.blocks.empty? and current_block.type
     end
   end
 end
