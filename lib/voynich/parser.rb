@@ -2,15 +2,15 @@ require 'voynich/document'
 
 module Voynich
   class Parser
+    attr_reader :document, :tags
+
     def initialize
-      @doc = Document.new
+      @tags = Hash.new { |h,k| h[k] = [] }
     end
 
-    def document
-      @doc
-    end
+    def parse(source, options = {})
+      @document = Document.new
 
-    def parse(source)
       source.each_line.map do |line|
         line.chomp!
 
@@ -28,7 +28,7 @@ module Voynich
           case line
           when /^.* `$/
             # helpGraphic
-            parse_inline(line)
+            parse_inline(line, options)
             next
           end
         end
@@ -39,7 +39,7 @@ module Voynich
           found_block :headline
           append_inline_part! [ :headline, $1 ]
           append_inline_part! $2
-          parse_inline($3)
+          parse_inline($3, options)
         when /^(\s*)(.+?)(\s*)~$/
           # helpHeader
           found_block :header
@@ -49,22 +49,22 @@ module Voynich
         when /^.* `$/
           # helpGraphic
           found_block :graphic
-          parse_inline(line)
+          parse_inline(line, options)
         when /^(?:|.* )>$/
           # helpExample
           found_block :plain
-          parse_inline(line)
+          parse_inline(line, options)
           found_block :example
         when /^===.*===$/, /^---.*--$/
           # helpSectionDelim
           found_block :section_delim
         else
           found_block :plain
-          parse_inline(line)
+          parse_inline(line, options)
         end
       end
 
-      @doc
+      @document
     end
 
     RE_INLINE_PARTS = {
@@ -84,7 +84,10 @@ module Voynich
                   note: /(note:?|Notes?:?|NOTE:?)/,
     }
     RE_INLINE = Regexp.new('(?<plain>.*?)(?:' + RE_INLINE_PARTS.map { |name,re| "(?<#{name}>#{re})" }.join('|') + ')|(?<plain>.+)')
-    def parse_inline(line)
+
+    # `
+
+    def parse_inline(line, options = {})
       line.scan(RE_INLINE) do
         m = Regexp.last_match
 
@@ -97,6 +100,10 @@ module Voynich
             found_inline n.to_sym, m[n]
           end
         end
+
+        if not m['hyper_text_entry'].nil? and not m['hyper_text_entry'].empty?
+          found_hyper_text_entry m['hyper_text_entry'][1..-2], options[:file]
+        end
       end
     end
 
@@ -104,7 +111,7 @@ module Voynich
 
     def append_block!(type)
       if current_block_type != type
-        @doc.blocks << Document::Block.new(type)
+        @document.blocks << Document::Block.new(type)
       else
         # connectable, add one line
         append_line! []
@@ -136,13 +143,19 @@ module Voynich
       end
     end
 
+    def found_hyper_text_entry(entry, file)
+      if file
+        tags[entry] << file
+      end
+    end
+
     def current_block
-      append_block! :plain if @doc.blocks.empty?
-      @doc.blocks.last
+      append_block! :plain if @document.blocks.empty?
+      @document.blocks.last
     end
 
     def current_block_type
-      not @doc.blocks.empty? and current_block.type
+      not @document.blocks.empty? and current_block.type
     end
   end
 end

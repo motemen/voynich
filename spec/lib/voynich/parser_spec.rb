@@ -86,10 +86,32 @@ VIMDOC
          :lines=>[["<                       The pattern does not support line breaks, it must"]]},
       ])
     end
+
+    context 'with hyper_text_entries' do
+      before do
+        parser.parse(<<-VIMDOC, { file: 'foobar.txt' })
+foo *foo*
+bar *bar*
+        VIMDOC
+      end
+
+      it 'should collect tags' do
+        expect(parser.tags).to eq({
+          'foo' => ['foobar.txt'],
+          'bar' => ['foobar.txt'],
+        })
+      end
+    end
   end
 
   describe '#parse_inline' do
-    context do
+    before do
+      parser.instance_eval do
+        @document = Voynich::Document.new
+      end
+    end
+
+    context 'N' do
       before { parser.parse_inline('N-1 times. N.') }
 
       it 'should recognize helpSpecial' do
@@ -100,7 +122,7 @@ VIMDOC
       end
     end
 
-    context do
+    context '<S-Up>' do
       before { parser.parse_inline('<S-Up> or <PageUp>') }
 
       it 'should recognize helpSpecial' do

@@ -1,5 +1,5 @@
-require "voynich/version"
+require 'voynich/version'
+require 'voynich/parser'
 
 module Voynich
-  # Your code goes here...
 end
