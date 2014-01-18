@@ -16,8 +16,7 @@ module Voynich
 
         if current_block_type == :example
           case line
-          when /^<(.*)/
-            line = $1
+          when /^<.*/
             # end example
           when /^[^ \t]/
             # end example
@@ -51,10 +50,10 @@ module Voynich
           # helpGraphic
           found_block :graphic
           parse_inline(line)
-        when /^(|.* )>$/
+        when /^(?:|.* )>$/
           # helpExample
           found_block :plain
-          parse_inline($1)
+          parse_inline(line)
           found_block :example
         when /^===.*===$/, /^---.*--$/
           # helpSectionDelim

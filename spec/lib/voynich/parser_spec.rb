@@ -7,7 +7,7 @@ describe Voynich::Parser do
   describe '#parse' do
     it 'should return a Document' do
       expect(parser.parse(sample_content('help-random.txt'))).to be_a(Voynich::Document)
-      puts parser.parse(sample_content('help-random.txt')).to_html
+      # puts parser.parse(sample_content('help-random.txt')).to_html
     end
 
     it 'should recognize headline block' do
@@ -31,9 +31,9 @@ describe Voynich::Parser do
     $ vim
 < blah blah blah.
       VIMDOC
-        [{:type=>:plain, :lines=>[["  blah blah blah: "]]},
+        [{:type=>:plain, :lines=>[["  blah blah blah: >"]]},
          {:type=>:example, :lines=>[["    $ vim"]]},
-         {:type=>:plain, :lines=>[[" blah blah blah."]]}]
+         {:type=>:plain, :lines=>[["< blah blah blah."]]}]
       )
     end
 
@@ -75,15 +75,15 @@ VIMDOC
 VIMDOC
       .to eq([
         {:type=>:plain,
-         :lines=>[["                        Example for case sensitive search: "]]},
+         :lines=>[["                        Example for case sensitive search: >"]]},
         {:type=>:example,
          :lines=>[["                                :helpgrep Uganda"]]},
         {:type=>:plain,
-         :lines=>[["                       Example for case ignoring search: "]]},
+         :lines=>[["<                       Example for case ignoring search: >"]]},
         {:type=>:example,
          :lines=>[["                                :helpgrep uganda"]]},
         {:type=>:plain,
-         :lines=>[["                       The pattern does not support line breaks, it must"]]},
+         :lines=>[["<                       The pattern does not support line breaks, it must"]]},
       ])
     end
   end
