@@ -79,9 +79,9 @@ module Voynich
         when :plain
           'p'
         when :headline
-          'h1'
+          'div.headline'
         when :header
-          'h2'
+          'div.header'
         when :example
           'pre.example'
         when :grahic
