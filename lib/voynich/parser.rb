@@ -100,7 +100,7 @@ module Voynich
         end
 
         if not m['hyper_text_entry'].nil? and not m['hyper_text_entry'].empty?
-          found_hyper_text_entry m['hyper_text_entry'][1..-2], options[:file]
+          found_hyper_text_entry m['hyper_text_entry'][1..-2], options[:filename]
         end
       end
     end
@@ -141,9 +141,9 @@ module Voynich
       end
     end
 
-    def found_hyper_text_entry(entry, file)
-      if file
-        tags[entry] << file
+    def found_hyper_text_entry(entry, filename)
+      if filename
+        tags[entry] << filename
       end
     end
 
