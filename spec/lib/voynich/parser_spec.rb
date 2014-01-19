@@ -108,7 +108,7 @@ VIMDOC
 
     context 'with hyper_text_entries' do
       before do
-        parser.parse(<<-VIMDOC, { file: 'foobar.txt' })
+        parser.parse(<<-VIMDOC, { filename: 'foobar.txt' })
 foo *foo*
 bar *bar*
         VIMDOC
