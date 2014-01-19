@@ -16,11 +16,30 @@ describe Voynich::Parser do
           :type => :headline,
           :lines => [
             [
-              [ :headline, 'INTRODUCTION' ],
-              "\t",
+              "INTRODUCTION\t",
               [ :hyper_text_entry, '*introduction*' ],
             ]
           ],
+        }
+      ])
+    end
+
+    it 'should recognize special inside a headline block' do
+      expect(parser.parse(<<-VIMDOC).to_a)
+CTRL-H\t\t\t\t\t\t*c_<BS>* *c_CTRL-H* *c_BS*
+      VIMDOC
+      .to eq([
+        {
+          :type => :headline,
+          :lines => [
+            [[:special, 'CTRL-H'],
+             "\t\t\t\t\t\t",
+             [:hyper_text_entry, '*c_<BS>*'],
+             ' ',
+             [:hyper_text_entry, '*c_CTRL-H*'],
+             ' ',
+             [:hyper_text_entry, '*c_BS*']]
+            ]
         }
       ])
     end

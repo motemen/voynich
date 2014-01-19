@@ -37,9 +37,7 @@ module Voynich
         when /^([-A-Z .][-A-Z0-9 .()]*?)([ \t]+)(\*.*)/
           # helpHeadline
           found_block :headline
-          append_inline_part! [ :headline, $1 ]
-          append_inline_part! $2
-          parse_inline($3, options)
+          parse_inline(line, options)
         when /^(\s*)(.+?)(\s*)~$/
           # helpHeader
           found_block :header
@@ -78,7 +76,7 @@ module Voynich
                           /(?<=\s)\[[-a-z^A-Z0-9_]{2,}\]/,
                           /<(?:[SCM]-.|[-a-zA-Z0-9_]+)>/,
                           /\[(?:range|line|count|offset|\+?cmd|[+-]?num|\+\+opt|arg(?:uments)?|ident|addr|group)\]/,
-                          /CTRL-(?:\.|Break|PageUp|PageDown|Insert|Del|-{char})/,
+                          /CTRL-(?:Break|PageUp|PageDown|Insert|Del|\{char\}|.)/,
                         ),
                    url: %r#\b(((https?|ftp|gopher)://|(mailto|file|news):)[^' \t<>"]+|(www|web|w3)[a-z0-9_-]*\.[a-z0-9._-]+\.[^' \t<>"]+)[a-zA-Z0-9/]#,
                   note: /(note:?|Notes?:?|NOTE:?)/,
