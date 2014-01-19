@@ -97,7 +97,7 @@ module Voynich
       def block_tag
         case type
         when :plain
-          'p'
+          'div.plain'
         when :headline
           'div.headline'
         when :header
