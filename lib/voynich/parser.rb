@@ -9,7 +9,7 @@ module Voynich
     end
 
     def parse(source, options = {})
-      @document = Document.new
+      @document = Document.new(tags: self.tags, filename: options[:filename])
 
       source.each_line.with_index(1) do |line,n|
         begin
@@ -113,7 +113,7 @@ module Voynich
 
     def append_block!(type)
       if current_block_type != type
-        @document.blocks << Document::Block.new(type)
+        @document.append_block!(type)
       else
         # connectable, add one line
         append_line! []

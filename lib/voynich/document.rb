@@ -2,10 +2,12 @@ require 'cgi'
 
 module Voynich
   class Document
-    attr_reader :blocks
+    attr_reader :blocks, :tags, :filename
 
-    def initialize
+    def initialize(options = {})
       @blocks = []
+      @tags = options[:tags]
+      @filename = options[:filename]
     end
 
     def to_a
@@ -16,15 +18,28 @@ module Voynich
       @blocks.map { |b| b.to_html } .join("\n")
     end
 
+    def mk_block(type)
+      Block.new(type, self)
+    end
+
+    def append_block!(type)
+      @blocks << mk_block(type)
+    end
+
     class Block
       attr_reader :type
 
-      def initialize(type)
+      def initialize(type, document)
         @type = type
+        @document = document
       end
 
       def lines
         @lines ||= []
+      end
+
+      def tags
+        @document && @document.tags
       end
 
       def to_h
@@ -56,7 +71,12 @@ module Voynich
         when :hyper_text_entry
           mk_tag 'a', { name: text[1..-2] }, html
         when :hyper_text_jump
-          mk_tag 'a', { href: "##{text[1..-2]}" }, html
+          entry = text[1..-2]
+          href = "##{entry}"
+          if tags && tags[entry]
+            href = "#{tags[entry][0]}#{href}"
+          end
+          mk_tag 'a', { href: href }, html
         when :option
           mk_tag 'code.option', nil, html
         when :command
@@ -64,7 +84,7 @@ module Voynich
         when :note
           mk_tag 'span.note', nil, html
         when :url
-          mk_tag 'a', { href: text }, html
+          mk_tag 'a', { href: text, target: '_blank' }, html
         when :special
           mk_tag 'code.special', nil, html
         when :headline, :header
@@ -104,7 +124,7 @@ module Voynich
           attrs.each do |k,v|
             tag += %Q( #{k}="#{escape_html(v.is_a?(Array) ? v.join(' ') : v)}")
           end
-          "<#{tag}>#{html}</#{tag}>"
+          "<#{tag}>#{html}</#{tag.sub(/ .*/, '')}>"
         else
           html
         end
