@@ -10,6 +10,16 @@ describe Voynich::Parser do
       # puts parser.parse(sample_content('help-random.txt')).to_html
     end
 
+    it 'should raise with line number on exception' do
+      expect { parser.parse(<<-VIMDOC) }
+foo
+bar
+\xff
+baz
+      VIMDOC
+        .to raise_error(/line 3/)
+    end
+
     it 'should recognize headline block' do
       expect(parser.parse("INTRODUCTION\t*introduction*").to_a).to eq([
         {

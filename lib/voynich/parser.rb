@@ -11,7 +11,7 @@ module Voynich
     def parse(source, options = {})
       @document = Document.new
 
-      source.each_line.with_index do |line,n|
+      source.each_line.with_index(1) do |line,n|
         begin
           line.chomp!
 
@@ -62,7 +62,7 @@ module Voynich
             parse_inline(line, options)
           end
         rescue => e
-          raise "when parsing line #{n}: e"
+          raise "when parsing line #{n}: #{e}"
         end
       end
 
