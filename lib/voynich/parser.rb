@@ -11,54 +11,58 @@ module Voynich
     def parse(source, options = {})
       @document = Document.new
 
-      source.each_line.map do |line|
-        line.chomp!
+      source.each_line.with_index do |line,n|
+        begin
+          line.chomp!
 
-        if current_block_type == :example
-          case line
-          when /^<.*/
-            # end example
-          when /^[^ \t]/
-            # end example
-          else
-            append_line! [line]
-            next
+          if current_block_type == :example
+            case line
+            when /^<.*/
+              # end example
+            when /^[^ \t]/
+              # end example
+            else
+              append_line! [line]
+              next
+            end
+          elsif current_block_type == :graphic
+            case line
+            when /^.* `$/
+              # helpGraphic
+              parse_inline(line, options)
+              next
+            end
           end
-        elsif current_block_type == :graphic
+
           case line
+          when /^([-A-Z .][-A-Z0-9 .()]*?)([ \t]+)(\*.*)/
+            # helpHeadline
+            found_block :headline
+            parse_inline(line, options)
+          when /^(\s*)(.+?)(\s*)~$/
+            # helpHeader
+            found_block :header
+            append_inline_part! $1 unless $1.empty?
+            append_inline_part! [ :header, $2 ]
+            append_inline_part! $3 unless $3.empty?
           when /^.* `$/
             # helpGraphic
+            found_block :graphic
             parse_inline(line, options)
-            next
+          when /^(?:|.* )>$/
+            # helpExample
+            found_block :plain
+            parse_inline(line, options)
+            found_block :example
+          when /^===.*===$/, /^---.*--$/
+            # helpSectionDelim
+            found_block :section_delim
+          else
+            found_block :plain
+            parse_inline(line, options)
           end
-        end
-
-        case line
-        when /^([-A-Z .][-A-Z0-9 .()]*?)([ \t]+)(\*.*)/
-          # helpHeadline
-          found_block :headline
-          parse_inline(line, options)
-        when /^(\s*)(.+?)(\s*)~$/
-          # helpHeader
-          found_block :header
-          append_inline_part! $1 unless $1.empty?
-          append_inline_part! [ :header, $2 ]
-          append_inline_part! $3 unless $3.empty?
-        when /^.* `$/
-          # helpGraphic
-          found_block :graphic
-          parse_inline(line, options)
-        when /^(?:|.* )>$/
-          # helpExample
-          found_block :plain
-          parse_inline(line, options)
-          found_block :example
-        when /^===.*===$/, /^---.*--$/
-          # helpSectionDelim
-          found_block :section_delim
-        else
-          found_block :plain
-          parse_inline(line, options)
+        rescue => e
+          raise "when parsing line #{n}: e"
         end
       end
 
