@@ -29,8 +29,12 @@ describe Voynich::Document::Block do
       end
     }
 
-    it do
-      expect(block.part_to_html([ :hyper_text_jump, '|foo|' ])).to include('<a href="foohelp.txt#foo">|foo|</a>')
+    it 'handles hyper_text_jump |foo|' do
+      expect(block.part_to_html([ :hyper_text_jump, '|foo|' ])).to include('<a href="foohelp.txt#foo" class="jump"><span class="sep">|</span>foo<span class="sep">|</span></a>')
+    end
+
+    it %(handles option 'ft') do
+      expect(block.part_to_html([ :option, %('ft') ])).to include(%(<code class="option">&#39;ft&#39;</code>))
     end
   end
 end

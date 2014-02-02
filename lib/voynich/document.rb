@@ -65,30 +65,30 @@ module Voynich
         return escape_html part if part.is_a?(String)
 
         type, text = part
-        html = escape_html text
 
         case type
         when :hyper_text_entry
-          mk_tag 'a', { name: text[1..-2] }, html
+          s, entry, e = text.partition(/(?<=^.).*(?=.$)/)
+          mk_tag 'a.entry', { name: entry }, [ mk_tag('span.sep', nil, s), escape_html(entry), mk_tag('span.sep', nil, e) ]
         when :hyper_text_jump
-          entry = text[1..-2]
+          s, entry, e = text.partition(/(?<=^.).*(?=.$)/)
           href = "##{entry}"
           if tags && tags[entry]
             href = "#{tags[entry][0]}#{href}"
           end
-          mk_tag 'a', { href: href }, html
+          mk_tag 'a.jump', { href: href }, [ mk_tag('span.sep', nil, s), escape_html(entry), mk_tag('span.sep', nil, e) ]
         when :option
-          mk_tag 'code.option', nil, html
+          mk_tag 'code.option', nil, escape_html(text)
         when :command
-          mk_tag 'code.command', nil, html
+          mk_tag 'code.command', nil, escape_html(text)
         when :note
-          mk_tag 'span.note', nil, html
+          mk_tag 'span.note', nil, escape_html(text)
         when :url
-          mk_tag 'a', { href: text, target: '_blank' }, html
+          mk_tag 'a.url', { href: text }, escape_html(text)
         when :special
-          mk_tag 'code.special', nil, html
+          mk_tag 'code.special', nil, escape_html(text)
         when :headline, :header
-          html
+          escape_html(text)
         else
           "<!-- TODO (#{type}) -->"
         end
@@ -113,6 +113,7 @@ module Voynich
 
       def mk_tag(tag, attrs, html)
         attrs = attrs || {}
+        html = html.join('') if html.is_a?(Array)
 
         if tag
           tag.gsub!(/\.([^.]+)/) do
