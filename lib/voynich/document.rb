@@ -67,26 +67,35 @@ module Voynich
         type, text = part
 
         case type
-        when :hyper_text_entry
+        when :hyper_text_entry, :hyper_text_jump
           s, entry, e = text.partition(/(?<=^.).*(?=.$)/)
-          mk_tag 'a.entry', { name: entry }, [ mk_tag('span.sep', nil, s), escape_html(entry), mk_tag('span.sep', nil, e) ]
-        when :hyper_text_jump
-          s, entry, e = text.partition(/(?<=^.).*(?=.$)/)
-          href = "##{entry}"
-          if tags && tags[entry]
-            href = "#{tags[entry][0]}#{href}"
+
+          attr = if type === :hyper_text_entry
+            { name: entry, :class => 'entry' }
+          elsif type === :hyper_text_jump
+            href = "##{entry}"
+            if tags && tags[entry]
+              href = "#{tags[entry][0]}#{href}"
+            end
+            { href: href, :class => 'jump' }
           end
-          mk_tag 'a.jump', { href: href }, [ mk_tag('span.sep', nil, s), escape_html(entry), mk_tag('span.sep', nil, e) ]
-        when :option
-          mk_tag 'code.option', nil, escape_html(text)
-        when :command
-          mk_tag 'code.command', nil, escape_html(text)
-        when :note
-          mk_tag 'span.note', nil, escape_html(text)
+
+          mk_tag 'a', attr, [
+            mk_tag('span.sep', nil, s),
+            escape_html(entry),
+            mk_tag('span.sep', nil, e)
+          ]
+        when :option, :command, :note, :special
+          tag = {
+            option:  'code.option',
+            command: 'code.command',
+            note:    'span.note',
+            special: 'code.special'
+          }.fetch(type)
+
+          mk_tag tag, nil, escape_html(text)
         when :url
           mk_tag 'a.url', { href: text }, escape_html(text)
-        when :special
-          mk_tag 'code.special', nil, escape_html(text)
         when :headline, :header
           escape_html(text)
         else
