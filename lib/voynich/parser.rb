@@ -14,11 +14,15 @@ module Voynich
       source.each_line.with_index(1) do |line,n|
         begin
           line.chomp!
+          keep_line = false
 
           if current_block_type == :example
             case line
-            when /^<.*/
-              # end example
+            when /^<(.*)/
+              found_block :plain
+              found_inline :example_marker_end, '<'
+              line = $1
+              keep_line = true
             when /^[^ \t]/
               # end example
             else
@@ -49,16 +53,18 @@ module Voynich
             # helpGraphic
             found_block :graphic
             parse_inline(line, options)
-          when /^(?:|.* )>$/
+          when /^(|.* )>$/
             # helpExample
-            found_block :plain
+            line = $1
+            found_block :plain unless keep_line
             parse_inline(line, options)
+            found_inline :example_marker_begin, '>'
             found_block :example
           when /^===.*===$/, /^---.*--$/
             # helpSectionDelim
             found_block :section_delim
           else
-            found_block :plain
+            found_block :plain unless keep_line
             parse_inline(line, options)
           end
         rescue => e

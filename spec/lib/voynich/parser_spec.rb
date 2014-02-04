@@ -7,7 +7,7 @@ describe Voynich::Parser do
   describe '#parse' do
     it 'should return a Document' do
       expect(parser.parse(sample_content('help-random.txt'))).to be_a(Voynich::Document)
-      # puts parser.parse(sample_content('help-random.txt')).to_html
+      # open('out.html', 'w').puts parser.parse(sample_content('help-random.txt')).to_html
     end
 
     it 'should raise with line number on exception' do
@@ -60,9 +60,9 @@ CTRL-H\t\t\t\t\t\t*c_<BS>* *c_CTRL-H* *c_BS*
     $ vim
 < blah blah blah.
       VIMDOC
-        [{:type=>:plain, :lines=>[["  blah blah blah: >"]]},
+        [{:type=>:plain, :lines=>[["  blah blah blah: ", [:example_marker_begin, '>']]]},
          {:type=>:example, :lines=>[["    $ vim"]]},
-         {:type=>:plain, :lines=>[["< blah blah blah."]]}]
+         {:type=>:plain, :lines=>[[[:example_marker_end, '<'], " blah blah blah."]]}]
       )
     end
 
@@ -104,15 +104,15 @@ VIMDOC
 VIMDOC
       .to eq([
         {:type=>:plain,
-         :lines=>[["                        Example for case sensitive search: >"]]},
+         :lines=>[["                        Example for case sensitive search: ", [:example_marker_begin, '>']]]},
         {:type=>:example,
          :lines=>[["                                :helpgrep Uganda"]]},
         {:type=>:plain,
-         :lines=>[["<                       Example for case ignoring search: >"]]},
+         :lines=>[[[:example_marker_end, '<'], "                       Example for case ignoring search: ", [:example_marker_begin, '>']]]},
         {:type=>:example,
          :lines=>[["                                :helpgrep uganda"]]},
         {:type=>:plain,
-         :lines=>[["<                       The pattern does not support line breaks, it must"]]},
+         :lines=>[[[:example_marker_end, '<'], "                       The pattern does not support line breaks, it must"]]},
       ])
     end
 
