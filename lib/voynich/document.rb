@@ -98,6 +98,8 @@ module Voynich
           mk_tag 'a.url', { href: text }, escape_html(text)
         when :headline, :header
           escape_html(text)
+        when :example_marker_begin, :example_marker_end
+          mk_tag 'span', { :class => type.to_s.gsub(/_/, '-') }, escape_html(text)
         else
           "<!-- TODO (#{type}) -->"
         end

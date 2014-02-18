@@ -7,7 +7,6 @@ describe Voynich::Parser do
   describe '#parse' do
     it 'should return a Document' do
       expect(parser.parse(sample_content('help-random.txt'))).to be_a(Voynich::Document)
-      # open('out.html', 'w').puts parser.parse(sample_content('help-random.txt')).to_html
     end
 
     it 'should raise with line number on exception' do
